@@ -630,6 +630,14 @@ int main(int argc, char *argv[]) {
 		stream.close();
 	});
 
+	app.any("*", [](auto *res, auto *req) {
+		res->cork([res]() {
+			res->writeStatus("404 Not Found");
+			res->writeHeader("Content-Type", "application/json");
+			res->end("{\"error\": \"Endpoint not found\"}");
+		});
+	});
+
 	app.run();
 
 	return 0;
