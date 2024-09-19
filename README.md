@@ -31,3 +31,9 @@ make
 
 # output should be at ./Papyrus
 ```
+
+## Start
+
+```sh
+./Papyrus key=<theuploadkey> port=<port>
+```
