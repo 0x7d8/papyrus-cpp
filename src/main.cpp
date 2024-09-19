@@ -22,39 +22,38 @@ public:
 		}
 	}
 
-	std::string get(const std::string &key) {
-		return _arguments[key];
+	std::optional<std::string> get(const std::string &key) const {
+		auto it = _arguments.find(key);
+		if (it != _arguments.end()) {
+			return it->second;
+		}
+
+		return std::nullopt;
 	}
 };
 
 int main(int argc, char *argv[]) {
 	auto arguments = Arguments(argc, argv);
-	auto database = DB("database.sqlite");
-	auto storage = Storage("storage");
+
+	auto database = DB(arguments.get("database").value_or("database.sqlite"));
+	auto storage = Storage(arguments.get("storage").value_or("storage"));
+
 	auto app = uWS::App();
 
 	migrate(database.get());
 
 	auto key = arguments.get("key");
-	if (key.empty()) {
+	if (!key.has_value()) {
 		Logger::color(Color::RED).log("Missing key argument");
 		return 1;
 	}
 
-	auto port = arguments.get("port");
-	if (!port.empty()) {
-		app.listen(std::stoi(port), [port](auto *token) {
-			if (token) {
-				Logger::color(Color::GREEN).log("Listening on port " + port);
-			}
-		});
-	} else {
-		app.listen(3000, [](auto *token) {
-			if (token) {
-				Logger::color(Color::GREEN).log("Listening on port 3000");
-			}
-		});
-	}
+	auto port = arguments.get("port").value_or("3000");
+	app.listen(std::stoi(port), [port](auto *token) {
+		if (token) {
+			Logger::color(Color::GREEN).log("Listening on port " + port);
+		}
+	});
 
 	app.post("/v2/create", [&database, key](auto *res, auto *req) {
 		if (req->getHeader("authorization") != key) {

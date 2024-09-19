@@ -36,4 +36,8 @@ make
 
 ```sh
 ./Papyrus key=<theuploadkey> port=<port>
+
+# optional arguments
+# database=<path to sqlite3 database>
+# storage=<path to build storage directory>
 ```
